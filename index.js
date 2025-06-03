@@ -6,7 +6,7 @@ const KJUR = require('jsrsasign')
 const app = express()
 const port = 3010
 const path = require('path')
-require('dotenv').config({ path: path.join(__dirname, '.env') })
+require('dotenv').config()
 
 app.use(function(req, res, next) {
   res.header("Cross-Origin-Embedder-Policy", "require-corp")

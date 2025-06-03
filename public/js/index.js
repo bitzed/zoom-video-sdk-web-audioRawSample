@@ -15,6 +15,12 @@ document.addEventListener("DOMContentLoaded", function() {
   document.getElementById('user_name').value = "User" + Math.floor(Math.random() * 100)
   document.getElementById('join-button').addEventListener('click', joinSession)
   document.getElementById('leave-button').addEventListener('click', leaveSession)
+    // 「Start Transcript」ボタンのクリックイベント
+    document.getElementById('start-transcript').addEventListener('click', startTranscript);
+  
+    // 「Stop Transcript」ボタンのクリックイベント
+    document.getElementById('stop-transcript').addEventListener('click', stopTranscript);
+
   console.log('DOMContentLoaded')
 })
 
@@ -96,13 +102,30 @@ async function joinSession() {
     console.log(payload)
   })
 
+  /////////// listener for realtime transcript
+  let previousTranscript = ''; // parameter for previous transcript
+  client.on('caption-message', (payload) => {
+    //console.log("caption-message: " + JSON.stringify(payload)); // if you want to print transcript in console, uncomment this line and comment the following line
+    // the original transcript is in style of adding words to the previous transcript to complete the sentence.
+    // so I changed to print the difference between previous transcript and current transcript
+    // if you think to push the transcript in real-time, it might be better to push only the diff to the server to avoid duplicate messages
+  if(previousTranscript === undefined) previousTranscript = ''; // if previousTranscript is undefined, initialize it with empty string
+  let fullText = payload.text; // initialize fullText with payload.text
+  const diff = fullText.replace(previousTranscript, "").trim(); // calculate difference between previous transcript and current transcript
+  // 
+  if (diff) {
+    console.log(diff);
+    previousTranscript = fullText; // replace previousTranscript with current transcript
+  }
+});
+
   //GET PARAMETERS AND JOIN VSDK SESSION
   let topic = document.getElementById('session_topic').value
   let userName = document.getElementById('user_name').value
   let password = document.getElementById('session_pwd').value
-  let role = document.getElementById('join-role').elements["joinRole"].value
+  //let role = document.getElementById('join-role').elements["joinRole"].value
 
-  let token = await getSignature(topic, role, password)
+  let token = await getSignature(topic, password) //role,
   console.log("topic: "+topic+", token: "+token+", userName: "+userName+", password: "+password);
 
   client.join(topic, token, userName, password).then(() => {
@@ -132,6 +155,22 @@ function leaveSession() {
   }
 }
 
+// live transcription start
+function startTranscript() {
+  let liveTranscriptionTranslation = client.getLiveTranscriptionClient();
+    liveTranscriptionTranslation.startLiveTranscription().then(() => {
+      //liveTranscriptionTranslation.setTranslationLanguage('en')
+      liveTranscriptionTranslation.setSpeakingLanguage('en')
+    }); // start live transcription
+  console.log(`[DEBUG] Live transcription started. You can change the language by calling setTranslationLanguage or setSpeakingLanguage. at Line 162 and 163`);
+}
+
+// live transcription stop
+function stopTranscript() {
+  let liveTranscriptionTranslation = client.getLiveTranscriptionClient();
+  liveTranscriptionTranslation.disableCaptions(); // Disable Live transcription
+  console.log(`[DEBUG] Live transcription stopped.`);
+}
 
 //AUDIO START
 async function audioStart() {
@@ -243,7 +282,7 @@ function sleep(ms) {
 
 ////////////////////////////////////////////////////////////////////////
 //　GET SIGNATURE FOR VSDK FOR WEB
-function getSignature(topic, role, password) {
+function getSignature(topic, password) { // role,
     return new Promise(function (resolve, reject) {
         let xhr = new XMLHttpRequest()
         console.log("location.hostname: " + location.hostname)
@@ -269,7 +308,7 @@ function getSignature(topic, role, password) {
         }
         const body = JSON.parse('{}')
         body["topic"] = topic
-        body["role"] = parseInt(role)
+        body["role"] = 1 //parseInt(role)
         body["password"] = password
 	console.log("sending JSON request with this body: "+body)
         xhr.send(JSON.stringify(body))
