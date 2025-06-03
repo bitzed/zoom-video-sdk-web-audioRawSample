@@ -137,7 +137,19 @@ async function joinSession() {
     console.log("get Session ID: ", sessionId);
     console.log("Connection Success");
     cameraStartStop(); //automatically unmute camera when join
-    audioStart(); //automatically start audio
+    audioStart().then(async () => {
+      const processorParams = {
+        name: "pitch-shift-processor",
+        type: "audio",
+        url: window.location.origin + "/pitch-shift-processor.js",
+        options: {
+          pitchRatio: 1.3
+        }
+      };
+      const processor = await stream.createProcessor(processorParams);
+      await stream.addProcessor(processor);
+      console.log('Pitch-shift audio processor added!');
+    });
   }).catch((error) => {
     console.log(error)
   })
