@@ -118,7 +118,7 @@ async function joinSession() {
       const processorParams = {
         name: "pitch-shift-processor",
         type: "audio",
-        url: window.location.origin + "/pitch-shift-processor.js",
+        url: window.location.origin + "/js/pitch-shift-processor.js",
         options: {
           pitchRatio: 1.3
         }
