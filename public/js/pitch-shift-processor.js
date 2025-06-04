@@ -1,5 +1,3 @@
-// pitch-shift-processor.js
-
 class PitchShiftProcessor extends AudioProcessor {
   constructor(port, options) {
     super(port, options);
@@ -8,8 +6,8 @@ class PitchShiftProcessor extends AudioProcessor {
     this.buffer = new Float32Array(this.bufferSize);
     this.writePos = 0;
     this.readPos = 0.0;
-    this.pitchRatio = options?.pitchRatio || 1.5; // ←ここでピッチ倍率変更可
-    this.formantRatio = options?.formantRatio || 1.2;
+    this.pitchRatio = options?.pitchRatio || 1.3; // you can change the pitch here
+    this.formantRatio = options?.formantRatio || 1.1;
     this.dryWet = options?.dryWet || 0.7;
     this.hpf = {
       prevIn: 0,
